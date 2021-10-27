@@ -1,16 +1,21 @@
 import TIM from 'tim-js-sdk'
 import TIMUploadPlugin from 'tim-upload-plugin'
 import axios from 'axios'
-export class cpsTim {
+export class CPSTim {
+  // 构造函数，执行TIM初始化及个人信息
   constructor (id) {
+    // 个人id
     this.id = id
+    // 存储消息的数组
     this.groupmsgList = []
     this.options = {
       SDKAppID: 1400561810
     }
+    // 发送信息时的群组目标
     let targetGroup
     let usersig
-    this.tim = TIM.create(options)
+    this.tim = TIM.create(this.options)
+    this.init()
   }
   // 初始化IM
   init () {
@@ -29,21 +34,30 @@ export class cpsTim {
       this.getNewMessageByMR(event)
     }.bind(this))
   }
-  // 登录IM 需要根据userID从服务器获得 usersig
-  login (userID) {
-    let params = 'userID=' + userID
-    console.log('开始请求usersig')
-    axios.get('http://127.0.0.1:3000/login/usersig?' + params)
-      .then((res) => {
-        console.log('成功获得usersig')
-        console.log(userID)
-        this.usersig = res.data
-        this.tim.login({ userID: userID, userSig: this.usersig })
-        console.log('in function timlogin')
-        console.log(this)
-        // 在登录后初始化目标群组
-        this.targetGroup = this.initTatgetGroup()
-      })
+  // 登录IM
+  // 如果usersig为空需要根据userID从服务器获得 usersig
+  login () {
+    let params = 'userID=' + this.id
+    if (!this.usersig) {
+      console.log('开始请求usersig')
+      axios.get('http://127.0.0.1:3000/login/usersig?' + params)
+        .then((res) => {
+          console.log('成功获得usersig' + res.data)
+          this.usersig = res.data
+          console.log('in function timlogin')
+          console.log(this)
+          this.tim.login({ userID: this.id, userSig: this.usersig })
+          console.log('正在寻找群组目标')
+          // 这里获得群组目标是异步函数，需要等待它完成再更新全局
+          this.targetGroup = this.initTatgetGroup()
+          console.log('全局群组目标更新为' + this.targetGroup)
+          // 在登录后初始化目标群组
+        })
+    } else {
+      console.log(' usersig 已存在/未过期？ ')
+      this.tim.login({ userID: this.id, userSig: this.usersig })
+      this.targetGroup = this.initTatgetGroup()
+    }
   }
   // 发送信息接口 接收信息内容
   sendMessage (messageContent) {
@@ -83,8 +97,12 @@ export class cpsTim {
     let url = 'http://127.0.0.1:3000/groupfinished?name=' + this.id
     axios.get(url)
       .then((res) => {
-        console.log(res.data)
+        console.log('初始获得群组id 群组id为' + res.data)
         targetGroup = res.data
+      })
+      .catch((err) => {
+        console.log('发生错误，未获得群组id')
+        console.log(err)
       })
     return targetGroup
   }

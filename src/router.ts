@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import chat from './views/chat.vue'
+import chatAbs from './views/chatAbs.vue'
 Vue.use(Router)
 
 export default new Router({
@@ -9,9 +10,14 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'chat',
-      component: chat
+      name: 'chatAbs',
+      component: chatAbs
     },
+    // {
+    //   path: '/',
+    //   name: 'chat',
+    //   component: chat
+    // },
     {
       path: '/about',
       name: 'about',

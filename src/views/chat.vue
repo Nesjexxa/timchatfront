@@ -14,6 +14,8 @@
   </div>
   <input type="text" placeholder="输入你的名字 并登陆" v-model="myName">
   <button v-on:click="TIMLoginWithoutID">登陆</button><p/>
+  <button v-on:click="Netping">网络测试</button><p/>
+  <button v-on:click="NetpingLocation">本地网络测试</button><p/>
   <input type="text" v-model="message" placeholder="message">
 <!--  <input type="text" v-model="message" placeholder="message">to <input type="text" placeholder="对方的名字" v-model="targetName">-->
   <button v-on:click="sendMessage">发送</button><p/>
@@ -345,6 +347,30 @@ export default {
       }).catch(function (imError) {
         console.warn('deleteGroupMember error:', imError) // 错误信息
       })
+    },
+    Netping: function () {
+      axios.post('http://121.40.243.16:3000/TIM/login', {
+        name: 'jack',
+        id: '200002'
+      })
+        .then(function (response) {
+          console.log(response)
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    },
+    NetpingLocation: function () {
+      axios.post('http://127.0.0.1:3000/TIM/login', {
+        name: 'jack',
+        id: '2002'
+      })
+        .then(function (response) {
+          console.log(response)
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
     }
   }
 }
