@@ -1,8 +1,18 @@
+/**
+ * 导入
+ import { CPSTim } from './dependence.js'
+ * 初始化
+ let tim = new CPSTim('jack')
+ * 发送信息
+ tim.sendMessage('message')
+ * 获取信息数组--对象属性
+ let message = tim.groupmsgList
+ */
 import TIM from 'tim-js-sdk'
 import TIMUploadPlugin from 'tim-upload-plugin'
 import axios from 'axios'
 export class CPSTim {
-  // 构造函数，执行TIM初始化及个人信息
+  // 构造函数，执行TIM初始化及个人信息并进行登陆
   constructor (id) {
     // 个人id
     this.id = id
@@ -33,31 +43,52 @@ export class CPSTim {
       console.log(event)
       this.getNewMessageByMR(event)
     }.bind(this))
+    this.login()
   }
   // 登录IM
   // 如果usersig为空需要根据userID从服务器获得 usersig
   login () {
     let params = 'userID=' + this.id
+    /**
+     * 请求usersig，usersig有效期一天
+     * 保存在前端中，若usersig过期需重新申请
+     */
     if (!this.usersig) {
       console.log('开始请求usersig')
-      axios.get('http://127.0.0.1:3000/login/usersig?' + params)
+      axios.get('http://127.0.0.1:3001/tim/usersig?' + params)
         .then((res) => {
           console.log('成功获得usersig' + res.data)
           this.usersig = res.data
+          console.log('全局usersig更新为' + this.usersig)
           console.log('in function timlogin')
           console.log(this)
           this.tim.login({ userID: this.id, userSig: this.usersig })
-          console.log('正在寻找群组目标')
-          // 这里获得群组目标是异步函数，需要等待它完成再更新全局
-          this.targetGroup = this.initTatgetGroup()
-          console.log('全局群组目标更新为' + this.targetGroup)
-          // 在登录后初始化目标群组
         })
     } else {
       console.log(' usersig 已存在/未过期？ ')
       this.tim.login({ userID: this.id, userSig: this.usersig })
-      this.targetGroup = this.initTatgetGroup()
     }
+    /**
+     * 寻找群聊目标，更新为targetGroup
+     * 每次课程开始时以老师为群主创建群聊，寻找数据库，返回群聊的id
+     * 课程结束后解散群组
+     */
+    console.log('正在寻找群组目标')
+    // 这里获得群组目标是异步函数，需要等待它完成再更新全局群组目标
+    let url = 'http://127.0.0.1:3001/tim/groupTarget?name=' + this.id
+    axios.get(url)
+      .then((res) => {
+        console.log('初始获得群组id 群组id为' + res.data)
+        this.targetGroup = res.data
+        console.log('全局群组目标更新为' + this.targetGroup)
+      })
+      .catch((err) => {
+        console.log('发生错误，未获得群组id')
+        console.log(err)
+      })
+  }
+  logout () {
+    this.tim.logout()
   }
   // 发送信息接口 接收信息内容
   sendMessage (messageContent) {
@@ -94,17 +125,18 @@ export class CPSTim {
     let targetGroup = ''
     console.log('in function inittargetgroup')
     console.log(this)
-    let url = 'http://127.0.0.1:3000/groupfinished?name=' + this.id
+    let url = 'http://127.0.0.1:3001/tim/groupTarget?name=' + this.id
     axios.get(url)
       .then((res) => {
         console.log('初始获得群组id 群组id为' + res.data)
         targetGroup = res.data
+        return targetGroup
       })
       .catch((err) => {
         console.log('发生错误，未获得群组id')
         console.log(err)
+        return null
       })
-    return targetGroup
   }
   // 将MessageReceived回调函数传来的event解析，并存入msglist
   getNewMessageByMR (event) {

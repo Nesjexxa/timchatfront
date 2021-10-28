@@ -160,7 +160,7 @@ export default {
     initTargetGroup: function () {
       console.log('in function inittargetgroup')
       console.log(this)
-      let url = 'http://127.0.0.1:3000/groupfinished?name=' + this.myName
+      let url = 'http://127.0.0.1:3001/tim/groupTarget?name=' + this.myName
       axios.get(url)
         .then((res) => {
           console.log(res.data)
@@ -178,7 +178,7 @@ export default {
       let usersig
       let params = 'userID=' + userID
       console.log('开始请求usersig')
-      axios.get('http://127.0.0.1:3000/login/usersig?' + params)
+      axios.get('http://127.0.0.1:3001/tim/usersig?' + params)
         .then((res) => {
           console.log('成功获得usersig')
           console.log(userID)
@@ -349,7 +349,7 @@ export default {
       })
     },
     Netping: function () {
-      axios.post('http://121.40.243.16:3000/TIM/login', {
+      axios.post('http://121.40.243.16:3001/class/login', {
         name: 'jack',
         id: '200002'
       })
@@ -361,9 +361,9 @@ export default {
         })
     },
     NetpingLocation: function () {
-      axios.post('http://127.0.0.1:3000/TIM/login', {
+      axios.post('http://127.0.0.1:3001/class/login', {
         name: 'jack',
-        id: '2002'
+        id: '200002'
       })
         .then(function (response) {
           console.log(response)
