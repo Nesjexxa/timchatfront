@@ -7,11 +7,13 @@
 <!--  <input type="text" v-model="message" placeholder="message">-->
   <button v-on:click="sendMessage('hello i am jack')">发送</button><p/>
   <button v-on:click="logout">登出</button><p/>
+  <button v-on:click="netPing">netping</button><p/>
 </div>
 </template>
 
 <script>
 import { CPSTim } from '../dependence'
+import axios from 'axios'
 export default {
   name: 'chatAbs',
   data: function () {
@@ -34,6 +36,21 @@ export default {
     },
     logout: function () {
       this.tim.logout()
+    },
+    netPing: function () {
+      axios.post('http://127.0.0.1:3001/class/createClass', {
+        className: '气候变暖',
+        name: 'jack',
+        id: '100002',
+        taskID: '0001',
+        classID: '00001'
+      })
+        .then(function (response) {
+          console.log(response)
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
     }
   }
 }
